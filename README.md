@@ -63,13 +63,13 @@ python autocap.py -d abc -s 100 -e 200
 ```bash
 # PowerShell 1
 # 1-150位を処理
-python autocap.py -n scan -e 150
+python autocap.py -d scan -e 150
 ```
 
 ```bash
 # PowerShell 2
 # 151-300位を処理
-python autocap.py -n scan -s 151 -e 300
+python autocap.py -d scan -s 151 -e 300
 ```
 
 ## OCR - ocr.py
@@ -88,7 +88,7 @@ autocap.pyで収集したスクリーンショットから、プレイヤー名�
 
 #### 環境
 
-Windowsは[GitHub](https://github.com/UB-Mannheim/tesseract/wiki)から64bit版のTesseract v5.0.xをダウンロードしてインストールしてください。
+Windowsは[GitHub](https://github.com/UB-Mannheim/tesseract/wiki)から64bit版のTesseract v5.0.xをダウンロードしてインストールしてください。  
 ※ インストール後、tesseract.exeまでのPathを通さないと動作しません。
 
 macOSはHomebrewからインストールできます。
