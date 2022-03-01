@@ -22,6 +22,7 @@ Pythonは[Microsoft Store](https://www.microsoft.com/ja-jp/p/python-310/9pjpw5ld
 
 ```bash
 pip install android-auto-play-opencv
+pip install pyperclip
 pip install portalocker
 ```
 
@@ -97,7 +98,7 @@ macOSはHomebrewからインストールできます。
 
 ```bash
 pip install portalocker
-pip install pyperclip
+pip install pillow
 pip install joblib
 pip install pyocr
 ```
