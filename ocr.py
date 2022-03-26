@@ -14,6 +14,9 @@ from PIL import Image, ImageOps, ImageEnhance
 # IDの切り抜き範囲
 ID_CROP_RANGE = (735, 236, 880, 268)
 
+# 同盟タグの切り抜き範囲
+ALLIANCE_CROP_RANGE = (644, 365, 763, 396)
+
 # 撃破数の切り抜き範囲
 # (
 #   (T1撃破数範囲),
@@ -103,6 +106,7 @@ def main():
                 "Rank",
                 "Name",
                 "ID",
+                "Alliance",
                 "Power",
                 "T1 Kills",
                 "T2 Kills",
@@ -134,6 +138,20 @@ def ocr_images(rank: str, name: str):
             f"{rank}位 - {name}: 「ID」の読み取りに失敗しました。 -> {rank}-id.png",
             [(f"{rank}-id.png", id_img)],
         )
+
+    # 同盟タグ
+    alliance_img = correct_image(
+        img_a, ALLIANCE_CROP_RANGE, scale=5, contrast=1.3, brightness=2
+    )
+    alliance = ocr_image(
+        alliance_img,
+        whitelist="[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#&-_=+;:'\",<>/",
+    )
+    alliance = re.match(r"^\[(.{3,4})\]", alliance)
+    if alliance is None:
+        alliance = ""
+    else:
+        alliance = alliance.group(1)
 
     # 撃破
     kills = []
@@ -215,13 +233,14 @@ def ocr_images(rank: str, name: str):
         )
 
     print(
-        f"{rank} {name} {id} {power} {kills[0]} {kills[1]} {kills[2]} {kills[3]} {kills[4]} {dead} {rss}"
+        f"{rank} {name} {id} {alliance} {power} {kills[0]} {kills[1]} {kills[2]} {kills[3]} {kills[4]} {dead} {rss}"
     )
 
     return (
         rank,
         name,
         id,
+        alliance,
         power,
         kills[0],
         kills[1],
@@ -239,12 +258,14 @@ def correct_image(
     threshold: int = 0,
     threshold_max: int = -1,
     invert: bool = True,
+    scale: float = 1,
     contrast: float = 1,
     brightness: float = 1,
 ) -> Image.Image:
     tmp = img.crop(crop_range)
     tmp = ImageOps.invert(tmp) if invert else tmp
     tmp = tmp.convert("L")
+    tmp = tmp.resize((tmp.width * scale, tmp.height * scale)) if scale != 1 else tmp
     tmp = ImageEnhance.Contrast(tmp).enhance(contrast) if contrast != 1 else tmp
     tmp = ImageEnhance.Brightness(tmp).enhance(brightness) if brightness != 1 else tmp
     if threshold == 0:
