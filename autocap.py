@@ -112,7 +112,7 @@ def auto_capture(start: int, end: int):
 
         # 撃破詳細表示・キャプチャ
         aapo.touchPos(KILL_DETAIL_TAP_POS[0], KILL_DETAIL_TAP_POS[1])
-        aapo.sleep(0.25)
+        aapo.sleep(0.5)
 
         try:
             checkImg(template_dir_path + "kill.png")
