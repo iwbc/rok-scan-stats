@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 import argparse
 import csv
 import re
@@ -11,11 +12,11 @@ import pyocr
 import pyocr.builders
 from PIL import Image, ImageOps, ImageEnhance
 
-# IDの切り抜き範囲
-ID_CROP_RANGE = (735, 236, 880, 268)
-
 # 同盟タグの切り抜き範囲
 ALLIANCE_CROP_RANGE = (644, 365, 763, 396)
+
+# IDの切り抜き範囲
+ID_CROP_RANGE = (735, 236, 880, 268)
 
 # 撃破数の切り抜き範囲
 # (
@@ -71,6 +72,8 @@ class Builder(pyocr.builders.TextBuilder):
 
 
 def main():
+    startTime = time.time()
+
     global tool, dir_path, img_dir_path, log_dir_path
 
     parser = argparse.ArgumentParser()
@@ -118,6 +121,9 @@ def main():
             ),
         )
         csv.writer(fh, delimiter="\t").writerows(data)
+        
+    endTime = time.time()
+    print(f"\n処理時間：{endTime - startTime}")
 
 
 def ocr_images(rank: str, name: str):
@@ -145,7 +151,7 @@ def ocr_images(rank: str, name: str):
     )
     alliance = ocr_image(
         alliance_img,
-        whitelist="[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#&-_=+;:'\",<>/",
+        whitelist=f"[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#&-_=+;:'\",<>/",
     )
     alliance = re.match(r"^\[(.{3,4})\]", alliance)
     if alliance is None:
@@ -165,6 +171,7 @@ def ocr_images(rank: str, name: str):
         kill_img = correct_image(
             img_a,
             kill_crop_range,
+            scale=1.25,
             threshold=50,
             invert=False,
             brightness=1.2,
@@ -174,6 +181,7 @@ def ocr_images(rank: str, name: str):
         kill_p_img = correct_image(
             img_a,
             kill_point_crop_range,
+            scale=1.25,
             threshold=50,
             invert=False,
             brightness=1.2,
@@ -265,7 +273,7 @@ def correct_image(
     tmp = img.crop(crop_range)
     tmp = ImageOps.invert(tmp) if invert else tmp
     tmp = tmp.convert("L")
-    tmp = tmp.resize((tmp.width * scale, tmp.height * scale)) if scale != 1 else tmp
+    tmp = tmp.resize((round(tmp.width * scale), round(tmp.height * scale))) if scale != 1 else tmp
     tmp = ImageEnhance.Contrast(tmp).enhance(contrast) if contrast != 1 else tmp
     tmp = ImageEnhance.Brightness(tmp).enhance(brightness) if brightness != 1 else tmp
     if threshold == 0:
