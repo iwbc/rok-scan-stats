@@ -171,7 +171,6 @@ def ocr_images(rank: str, name: str):
         kill_img = correct_image(
             img_a,
             kill_crop_range,
-            scale=1.25,
             threshold=50,
             invert=False,
             brightness=1.2,
@@ -181,7 +180,6 @@ def ocr_images(rank: str, name: str):
         kill_p_img = correct_image(
             img_a,
             kill_point_crop_range,
-            scale=1.25,
             threshold=50,
             invert=False,
             brightness=1.2,
