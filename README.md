@@ -81,7 +81,7 @@ autocap.pyで収集したスクリーンショットから、プレイヤー名�
 
 - Windows 10
   - Python 3.10（Microsoft Store）
-- macOS 12（Intel CPU）
+- macOS 12
   - Python 3.10（Homebrew）
 - Tesseract OCR 5.0.x
 
