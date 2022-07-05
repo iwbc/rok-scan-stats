@@ -83,7 +83,7 @@ autocap.pyで収集したスクリーンショットから、プレイヤー名�
   - Python 3.10（Microsoft Store）
 - macOS 12
   - Python 3.10（Homebrew）
-- Tesseract OCR 5.0.x
+- Tesseract OCR 5.x
 
 ### セットアップ
 
