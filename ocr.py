@@ -110,8 +110,8 @@ def main():
             0,
             (
                 "Rank",
-                "Name",
                 "ID",
+                "Name",
                 "Alliance",
                 "Power",
                 "Highest Power",
@@ -223,7 +223,9 @@ def ocr_images(rank: str, name: str):
         )
 
     # 過去最大戦力
-    hpower_img = correct_image(img_b, HIGHEST_POWER_CROP_RANGE, brightness=1.3, contrast=1.8)
+    hpower_img = correct_image(
+        img_b, HIGHEST_POWER_CROP_RANGE, brightness=1.3, contrast=1.8
+    )
     hpower = ocr_image(hpower_img)
     hpower = hpower.replace(",", "")
     if hpower == "":
@@ -258,13 +260,13 @@ def ocr_images(rank: str, name: str):
         )
 
     print(
-        f"{rank} {name} {id} {alliance} {power} {hpower} {kills[0]} {kills[1]} {kills[2]} {kills[3]} {kills[4]} {dead} {rss}"
+        f"{rank} {id} {name} {alliance} {power} {hpower} {kills[0]} {kills[1]} {kills[2]} {kills[3]} {kills[4]} {dead} {rss}"
     )
 
     return (
         rank,
-        name,
         id,
+        name,
         alliance,
         power,
         hpower,
@@ -291,7 +293,11 @@ def correct_image(
     tmp = img.crop(crop_range)
     tmp = ImageOps.invert(tmp) if invert else tmp
     tmp = tmp.convert("L")
-    tmp = tmp.resize((round(tmp.width * scale), round(tmp.height * scale))) if scale != 1 else tmp
+    tmp = (
+        tmp.resize((round(tmp.width * scale), round(tmp.height * scale)))
+        if scale != 1
+        else tmp
+    )
     tmp = ImageEnhance.Contrast(tmp).enhance(contrast) if contrast != 1 else tmp
     tmp = ImageEnhance.Brightness(tmp).enhance(brightness) if brightness != 1 else tmp
     if threshold == 0:
