@@ -25,11 +25,11 @@ ID_CROP_RANGE = (735, 236, 880, 268)
 #   ...
 # )
 KILL_CROP_RANGES = (
-    (862, 599, 1067, 625),
-    (862, 643, 1067, 669),
-    (862, 687, 1067, 713),
-    (862, 732, 1067, 758),
-    (862, 776, 1067, 802),
+    (863, 468, 1068, 494),
+    (863, 512, 1068, 538),
+    (863, 556, 1068, 582),
+    (863, 600, 1068, 626),
+    (863, 645, 1068, 671),
 )
 
 # 撃破ポイントの切り抜き範囲
@@ -39,16 +39,19 @@ KILL_CROP_RANGES = (
 #   ...
 # )
 KILL_POINT_CROP_RANGES = (
-    (1211, 599, 1415, 625),
-    (1211, 643, 1415, 669),
-    (1211, 687, 1415, 713),
-    (1211, 732, 1415, 758),
-    (1211, 776, 1415, 802),
+    (1211, 468, 1415, 494),
+    (1211, 512, 1415, 538),
+    (1211, 556, 1415, 582),
+    (1211, 600, 1415, 626),
+    (1211, 645, 1415, 671),
 )
 
 # 撃破ポイント係数
 # (T1, T2, T3, T4, T5)
 KILL_POINT_COEFFICIENTS = (0.2, 2, 4, 10, 20)
+
+# 遠隔ポイントの切り抜き範囲
+RANGED_POINT_CROP_RANGE = (1118, 744, 1415, 775)
 
 # 戦力の切り抜き範囲
 POWER_CROP_RANGE = (809, 141, 1009, 173)
@@ -104,7 +107,7 @@ def main():
             delayed(ocr_images)(rank, name) for rank, name in names
         )
 
-    with open(dir_path + "data.tsv", "w", encoding="utf_8", newline="") as fh:
+    with open(dir_path + args.dir + ".tsv", "w", encoding="utf_8", newline="") as fh:
         data = sorted(data, key=lambda x: int(x[0]))
         data.insert(
             0,
@@ -120,6 +123,7 @@ def main():
                 "T3 Kills",
                 "T4 Kills",
                 "T5 Kills",
+                "Ranged Points",
                 "Dead",
                 "RSS",
             ),
@@ -210,6 +214,23 @@ def ocr_images(rank: str, name: str):
 
         kills.append(kill)
 
+    # 遠隔ポイント
+    ranged_img = correct_image(
+        img_a,
+        RANGED_POINT_CROP_RANGE,
+        threshold=50,
+        invert=False,
+        brightness=1.2,
+        contrast=1.2,
+    )
+    ranged = ocr_image(ranged_img)
+    ranged = ranged.replace(",", "")
+    if ranged == "":
+        err(
+            f"{rank}位 - {name}: 「遠隔ポイント」の読み取りに失敗しました。 -> {rank}-ranged.png",
+            [(f"{rank}-ranged.png", ranged_img)],
+        )
+
     # 戦力
     power_img = correct_image(
         img_b, POWER_CROP_RANGE, threshold=50, brightness=2, contrast=1.2
@@ -233,7 +254,9 @@ def ocr_images(rank: str, name: str):
             f"{rank}位 - {name}: 「過去最大戦力」の読み取りに失敗しました。 -> {rank}-hpower.png",
             [(f"{rank}-dead.png", hpower_img)],
         )
-    elif int(power) > int(hpower):
+
+    # 戦力チェック
+    if power != "" and hpower != "" and int(power) > int(hpower):
         err(
             f"{rank}位 - {name}: 「戦力」または「過去最大戦力」を正しく読み取りできなかった可能性があります。OCRの結果は戦力「{power}」、過去最大戦力「{hpower}」です。 -> {rank}-power.png, {rank}-hpower.png",
             [(f"{rank}-power.png", power_img), (f"{rank}-hpower.png", hpower_img)],
@@ -260,7 +283,7 @@ def ocr_images(rank: str, name: str):
         )
 
     print(
-        f"{rank} {id} {name} {alliance} {power} {hpower} {kills[0]} {kills[1]} {kills[2]} {kills[3]} {kills[4]} {dead} {rss}"
+        f"{rank} {id} {name} {alliance} {power} {hpower} {kills[0]} {kills[1]} {kills[2]} {kills[3]} {kills[4]} {ranged} {dead} {rss}"
     )
 
     return (
@@ -275,6 +298,7 @@ def ocr_images(rank: str, name: str):
         kills[2],
         kills[3],
         kills[4],
+        ranged,
         dead,
         rss,
     )
