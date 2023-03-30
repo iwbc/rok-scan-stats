@@ -9,7 +9,7 @@ Rise of Kingdoms なぜ公式で用意しないのかランキング圧倒的No1
 ### 動作環境
 
 - Windows 10
-- Python 3.10（Microsoft Store版）
+- Python 3.11（Microsoft Store版）
 - NoxPlayer 7
 
 ### セットアップ
@@ -75,21 +75,21 @@ python autocap.py -d scan -s 151 -e 300
 
 ## OCR - ocr.py
 
-autocap.pyで収集したスクリーンショットから、プレイヤー名、ID、同盟タグ、戦力、過去最大戦力、T1〜T5撃破数、戦死数、資源援助数を抽出し、TSV（タブ区切りのCSV）で出力します。
+autocap.pyで収集したスクリーンショットから、ID、プレイヤー名、同盟タグ、戦力、過去最大戦力、T1〜T5撃破数、遠隔ポイント、戦死数、資源援助数を抽出し、TSV（タブ区切りのCSV）で出力します。
 
 ### 動作環境
 
 - Windows 10
-  - Python 3.10（Microsoft Store）
+  - Python 3.11（Microsoft Store）
 - macOS 12
-  - Python 3.10（Homebrew）
+  - Python 3.11（Homebrew）
 - Tesseract OCR 5.x
 
 ### セットアップ
 
 #### 環境
 
-Windowsは[GitHub](https://github.com/UB-Mannheim/tesseract/wiki)から64bit版のTesseract v5.0.xをダウンロードしてインストールしてください。  
+Windowsは[GitHub](https://github.com/UB-Mannheim/tesseract/wiki)から64bit版のTesseract v5.xをダウンロードしてインストールしてください。  
 ※ インストール後、tesseract.exeまでのPathを通さないと動作しません。
 
 macOSはHomebrewからインストールできます。

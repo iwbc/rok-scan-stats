@@ -59,7 +59,7 @@ def main():
         print("無効な入力値です。処理を中止します。")
         sys.exit(1)
 
-    template_dir_path = "templates/"
+    template_dir_path = "templates/autocap"
     dir_path = "data/" + args.dir + "/"
     img_dir_path = dir_path + "screenshots/"
     log_dir_path = dir_path + "logs/autocap/"

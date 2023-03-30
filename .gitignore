@@ -1,2 +1,5 @@
+.clasp.json
+appsscript.json
 data/
 node_modules/
+__pycache__/

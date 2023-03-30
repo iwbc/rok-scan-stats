@@ -10,7 +10,9 @@ from joblib import Parallel, delayed
 import portalocker
 import pyocr
 import pyocr.builders
-from PIL import Image, ImageOps, ImageEnhance
+from PIL import Image
+import utils.image
+from utils.builder import Builder
 
 # 同盟タグの切り抜き範囲
 ALLIANCE_CROP_RANGE = (644, 365, 763, 396)
@@ -71,12 +73,6 @@ img_dir_path: str = None
 log_dir_path: str = None
 
 
-class Builder(pyocr.builders.TextBuilder):
-    def __init__(self, whitelist: str, tesseract_layout: int = 6):
-        super(Builder, self).__init__(tesseract_layout)
-        self.tesseract_configs += ["-c", "tessedit_char_whitelist=" + whitelist]
-
-
 def main():
     startTime = time.time()
 
@@ -84,7 +80,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("dir", type=str)
-    parser.add_argument("-j", "--jobs", type=int, default=-2)
+    parser.add_argument("-j", "--jobs", type=int, default=-1)
     args = parser.parse_args()
 
     tools = pyocr.get_available_tools()
@@ -144,7 +140,9 @@ def ocr_images(rank: str, name: str):
         img_b = img_b.convert("RGB")
 
     # ID
-    id_img = correct_image(img_a, ID_CROP_RANGE, threshold=50, contrast=5, brightness=2)
+    id_img = utils.image.correct(
+        img_a, ID_CROP_RANGE, threshold=50, contrast=5, brightness=2
+    )
     id = ocr_image(id_img, whitelist="0123456789)")
     id = re.sub("\)$", "", id)
     if id == "":
@@ -154,7 +152,7 @@ def ocr_images(rank: str, name: str):
         )
 
     # 同盟タグ
-    alliance_img = correct_image(
+    alliance_img = utils.image.correct(
         img_a, ALLIANCE_CROP_RANGE, scale=5, contrast=1.3, brightness=2
     )
     alliance = ocr_image(
@@ -176,7 +174,7 @@ def ocr_images(rank: str, name: str):
     ) in enumerate(
         zip(KILL_CROP_RANGES, KILL_POINT_CROP_RANGES, KILL_POINT_COEFFICIENTS)
     ):
-        kill_img = correct_image(
+        kill_img = utils.image.correct(
             img_a,
             kill_crop_range,
             threshold=50,
@@ -185,7 +183,7 @@ def ocr_images(rank: str, name: str):
             contrast=1.2,
         )
         kill = ocr_image(kill_img)
-        kill_p_img = correct_image(
+        kill_p_img = utils.image.correct(
             img_a,
             kill_point_crop_range,
             threshold=50,
@@ -215,7 +213,7 @@ def ocr_images(rank: str, name: str):
         kills.append(kill)
 
     # 遠隔ポイント
-    ranged_img = correct_image(
+    ranged_img = utils.image.correct(
         img_a,
         RANGED_POINT_CROP_RANGE,
         threshold=50,
@@ -232,7 +230,7 @@ def ocr_images(rank: str, name: str):
         )
 
     # 戦力
-    power_img = correct_image(
+    power_img = utils.image.correct(
         img_b, POWER_CROP_RANGE, threshold=50, brightness=2, contrast=1.2
     )
     power = ocr_image(power_img)
@@ -244,7 +242,7 @@ def ocr_images(rank: str, name: str):
         )
 
     # 過去最大戦力
-    hpower_img = correct_image(
+    hpower_img = utils.image.correct(
         img_b, HIGHEST_POWER_CROP_RANGE, brightness=1.3, contrast=1.8
     )
     hpower = ocr_image(hpower_img)
@@ -263,7 +261,7 @@ def ocr_images(rank: str, name: str):
         )
 
     # 戦死
-    dead_img = correct_image(img_b, DEAD_CROP_RANGE, brightness=1.3, contrast=1.8)
+    dead_img = utils.image.correct(img_b, DEAD_CROP_RANGE, brightness=1.3, contrast=1.8)
     dead = ocr_image(dead_img)
     dead = dead.replace(",", "")
     if dead == "":
@@ -273,7 +271,7 @@ def ocr_images(rank: str, name: str):
         )
 
     # 資源援助
-    rss_img = correct_image(img_b, RSS_CROP_RANGE, brightness=1.3, contrast=1.8)
+    rss_img = utils.image.correct(img_b, RSS_CROP_RANGE, brightness=1.3, contrast=1.8)
     rss = ocr_image(rss_img)
     rss = rss.replace(",", "")
     if rss == "":
@@ -302,35 +300,6 @@ def ocr_images(rank: str, name: str):
         dead,
         rss,
     )
-
-
-def correct_image(
-    img: Image.Image,
-    crop_range: tuple,
-    threshold: int = 0,
-    threshold_max: int = -1,
-    invert: bool = True,
-    scale: float = 1,
-    contrast: float = 1,
-    brightness: float = 1,
-) -> Image.Image:
-    tmp = img.crop(crop_range)
-    tmp = ImageOps.invert(tmp) if invert else tmp
-    tmp = tmp.convert("L")
-    tmp = (
-        tmp.resize((round(tmp.width * scale), round(tmp.height * scale)))
-        if scale != 1
-        else tmp
-    )
-    tmp = ImageEnhance.Contrast(tmp).enhance(contrast) if contrast != 1 else tmp
-    tmp = ImageEnhance.Brightness(tmp).enhance(brightness) if brightness != 1 else tmp
-    if threshold == 0:
-        pass
-    elif threshold_max == -1:
-        tmp = tmp.point(lambda x: 0 if x < threshold else x)
-    else:
-        tmp = tmp.point(lambda x: 0 if x < threshold else threshold_max)
-    return tmp
 
 
 def ocr_image(img: Image, whitelist: str = "0123456789,") -> str:
