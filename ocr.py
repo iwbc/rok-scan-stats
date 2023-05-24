@@ -65,6 +65,7 @@ DEAD_CROP_RANGE = (1103, 450, 1303, 480)
 # 資源援助数の切り抜き範囲
 RSS_CROP_RANGE = (1053, 680, 1303, 710)
 
+args = None
 tool = None
 dir_path: str = None
 img_dir_path: str = None
@@ -80,11 +81,32 @@ class Builder(pyocr.builders.TextBuilder):
 def main():
     startTime = time.time()
 
-    global tool, dir_path, img_dir_path, log_dir_path
+    global args, tool, dir_path, img_dir_path, log_dir_path
 
     parser = argparse.ArgumentParser()
     parser.add_argument("dir", type=str)
     parser.add_argument("-j", "--jobs", type=int, default=-2)
+    parser.add_argument(
+        "-t",
+        "--targets",
+        nargs="*",
+        type=str,
+        default=[
+            "id",
+            "alliance",
+            "power",
+            "hpower",
+            "t1kill",
+            "t2kill",
+            "t3kill",
+            "t4kill",
+            "t5kill",
+            "ranged",
+            "dead",
+            "rss",
+        ],
+    )
+    parser.add_argument("--killtest", action="store_true")
     args = parser.parse_args()
 
     tools = pyocr.get_available_tools()
@@ -144,28 +166,34 @@ def ocr_images(rank: str, name: str):
         img_b = img_b.convert("RGB")
 
     # ID
-    id_img = correct_image(img_a, ID_CROP_RANGE, threshold=50, contrast=5, brightness=2)
-    id = ocr_image(id_img, whitelist="0123456789)")
-    id = re.sub("\)$", "", id)
-    if id == "":
-        err(
-            f"{rank}位 - {name}: 「ID」の読み取りに失敗しました。 -> {rank}-id.png",
-            [(f"{rank}-id.png", id_img)],
+    id = ""
+    if "id" in args.targets:
+        id_img = correct_image(
+            img_a, ID_CROP_RANGE, threshold=50, contrast=5, brightness=2
         )
+        id = ocr_image(id_img, whitelist="0123456789)")
+        id = re.sub("\)$", "", id)
+        if id == "":
+            err(
+                f"{rank}位 - {name}: 「ID」の読み取りに失敗しました。 -> {rank}-id.png",
+                [(f"{rank}-id.png", id_img)],
+            )
 
     # 同盟タグ
-    alliance_img = correct_image(
-        img_a, ALLIANCE_CROP_RANGE, scale=5, contrast=1.3, brightness=2
-    )
-    alliance = ocr_image(
-        alliance_img,
-        whitelist=f"[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#&-_=+;:'\",<>/",
-    )
-    alliance = re.match(r"^\[(.{3,4})\]", alliance)
-    if alliance is None:
-        alliance = ""
-    else:
-        alliance = alliance.group(1)
+    alliance = ""
+    if "alliance" in args.targets:
+        alliance_img = correct_image(
+            img_a, ALLIANCE_CROP_RANGE, scale=5, contrast=1.3, brightness=2
+        )
+        alliance = ocr_image(
+            alliance_img,
+            whitelist=f"[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#&-_=+;:'\",<>/",
+        )
+        alliance = re.match(r"^\[(.{3,4})\]", alliance)
+        if alliance is None:
+            alliance = ""
+        else:
+            alliance = alliance.group(1)
 
     # 撃破
     kills = []
@@ -176,84 +204,104 @@ def ocr_images(rank: str, name: str):
     ) in enumerate(
         zip(KILL_CROP_RANGES, KILL_POINT_CROP_RANGES, KILL_POINT_COEFFICIENTS)
     ):
-        kill_img = correct_image(
-            img_a,
-            kill_crop_range,
-            threshold=50,
-            invert=False,
-            brightness=1.2,
-            contrast=1.2,
-        )
-        kill = ocr_image(kill_img)
-        kill_p_img = correct_image(
-            img_a,
-            kill_point_crop_range,
-            threshold=50,
-            invert=False,
-            brightness=1.2,
-            contrast=1.2,
-        )
-        kill_p = ocr_image(kill_p_img)
-
-        kill = kill.replace(",", "")
-        kill_p = kill_p.replace(",", "")
-
-        kill_img_file_name = rank + "-t" + str(i + 1) + "-kill.png"
-        kill_p_img_file_name = rank + "-t" + str(i + 1) + "-kill-point.png"
-
-        if kill == "":
-            err(
-                f"{rank}位 - {name}: 「T{i + 1}撃破数」の読み取りに失敗しました。 -> {kill_img_file_name}, {kill_p_img_file_name}",
-                [(kill_img_file_name, kill_img), (kill_p_img_file_name, kill_p_img)],
+        kill = ""
+        if "kill" in args.targets or f"t{i+1}kill" in args.targets:
+            kill_img = correct_image(
+                img_a,
+                kill_crop_range,
+                threshold=50,
+                invert=False,
+                brightness=1.2,
+                contrast=1.2,
             )
-        elif abs(int(kill) * kill_point_coefficient - int(kill_p)) > 1:
-            err(
-                f"{rank}位 - {name}: 「T{i + 1}撃破数」を正しく読み取りできなかった可能性があります。OCRの結果は撃破数「{kill}」、撃破ポイント「{kill_p}」です。 -> {kill_img_file_name}, {kill_p_img_file_name}",
-                [(kill_img_file_name, kill_img), (kill_p_img_file_name, kill_p_img)],
-            )
+            kill = ocr_image(kill_img)
+            kill = kill.replace(",", "")
+            kill_img_file_name = rank + "-t" + str(i + 1) + "-kill.png"
+
+            if args.killtest:
+                kill_p_img = correct_image(
+                    img_a,
+                    kill_point_crop_range,
+                    threshold=50,
+                    invert=False,
+                    brightness=1.2,
+                    contrast=1.2,
+                )
+                kill_p = ocr_image(kill_p_img)
+                kill_p = kill_p.replace(",", "")
+                kill_p_img_file_name = rank + "-t" + str(i + 1) + "-kill-point.png"
+
+                if kill == "":
+                    err(
+                        f"{rank}位 - {name}: 「T{i + 1}撃破数」の読み取りに失敗しました。 -> {kill_img_file_name}, {kill_p_img_file_name}",
+                        [
+                            (kill_img_file_name, kill_img),
+                            (kill_p_img_file_name, kill_p_img),
+                        ],
+                    )
+                elif abs(int(kill) * kill_point_coefficient - int(kill_p)) > 1:
+                    err(
+                        f"{rank}位 - {name}: 「T{i + 1}撃破数」を正しく読み取りできなかった可能性があります。OCRの結果は撃破数「{kill}」、撃破ポイント「{kill_p}」です。 -> {kill_img_file_name}, {kill_p_img_file_name}",
+                        [
+                            (kill_img_file_name, kill_img),
+                            (kill_p_img_file_name, kill_p_img),
+                        ],
+                    )
+            else:
+                if kill == "":
+                    err(
+                        f"{rank}位 - {name}: 「T{i + 1}撃破数」の読み取りに失敗しました。 -> {kill_img_file_name}",
+                        [(kill_img_file_name, kill_img)],
+                    )
 
         kills.append(kill)
 
     # 遠隔ポイント
-    ranged_img = correct_image(
-        img_a,
-        RANGED_POINT_CROP_RANGE,
-        threshold=50,
-        invert=False,
-        brightness=1.2,
-        contrast=1.2,
-    )
-    ranged = ocr_image(ranged_img)
-    ranged = ranged.replace(",", "")
-    if ranged == "":
-        err(
-            f"{rank}位 - {name}: 「遠隔ポイント」の読み取りに失敗しました。 -> {rank}-ranged.png",
-            [(f"{rank}-ranged.png", ranged_img)],
+    ranged = ""
+    if "ranged" in args.targets:
+        ranged_img = correct_image(
+            img_a,
+            RANGED_POINT_CROP_RANGE,
+            threshold=50,
+            invert=False,
+            brightness=1.2,
+            contrast=1.2,
         )
+        ranged = ocr_image(ranged_img)
+        ranged = ranged.replace(",", "")
+        if ranged == "":
+            err(
+                f"{rank}位 - {name}: 「遠隔ポイント」の読み取りに失敗しました。 -> {rank}-ranged.png",
+                [(f"{rank}-ranged.png", ranged_img)],
+            )
 
     # 戦力
-    power_img = correct_image(
-        img_b, POWER_CROP_RANGE, threshold=50, brightness=2, contrast=1.2
-    )
-    power = ocr_image(power_img)
-    power = power.replace(",", "")
-    if power == "":
-        err(
-            f"{rank}位 - {name}: 「戦力」の読み取りに失敗しました。 -> {rank}-power.png",
-            [(f"{rank}-power.png", power_img)],
+    power = ""
+    if "power" in args.targets:
+        power_img = correct_image(
+            img_b, POWER_CROP_RANGE, threshold=50, brightness=2, contrast=1.2
         )
+        power = ocr_image(power_img)
+        power = power.replace(",", "")
+        if power == "":
+            err(
+                f"{rank}位 - {name}: 「戦力」の読み取りに失敗しました。 -> {rank}-power.png",
+                [(f"{rank}-power.png", power_img)],
+            )
 
     # 過去最大戦力
-    hpower_img = correct_image(
-        img_b, HIGHEST_POWER_CROP_RANGE, brightness=1.3, contrast=1.8
-    )
-    hpower = ocr_image(hpower_img)
-    hpower = hpower.replace(",", "")
-    if hpower == "":
-        err(
-            f"{rank}位 - {name}: 「過去最大戦力」の読み取りに失敗しました。 -> {rank}-hpower.png",
-            [(f"{rank}-dead.png", hpower_img)],
+    hpower = ""
+    if "hpower" in args.targets:
+        hpower_img = correct_image(
+            img_b, HIGHEST_POWER_CROP_RANGE, brightness=1.3, contrast=1.8
         )
+        hpower = ocr_image(hpower_img)
+        hpower = hpower.replace(",", "")
+        if hpower == "":
+            err(
+                f"{rank}位 - {name}: 「過去最大戦力」の読み取りに失敗しました。 -> {rank}-hpower.png",
+                [(f"{rank}-dead.png", hpower_img)],
+            )
 
     # 戦力チェック
     if power != "" and hpower != "" and int(power) > int(hpower):
@@ -263,24 +311,28 @@ def ocr_images(rank: str, name: str):
         )
 
     # 戦死
-    dead_img = correct_image(img_b, DEAD_CROP_RANGE, brightness=1.3, contrast=1.8)
-    dead = ocr_image(dead_img)
-    dead = dead.replace(",", "")
-    if dead == "":
-        err(
-            f"{rank}位 - {name}: 「戦死数」の読み取りに失敗しました。 -> {rank}-dead.png",
-            [(f"{rank}-dead.png", dead_img)],
-        )
+    dead = ""
+    if "dead" in args.targets:
+        dead_img = correct_image(img_b, DEAD_CROP_RANGE, brightness=1.3, contrast=1.8)
+        dead = ocr_image(dead_img)
+        dead = dead.replace(",", "")
+        if dead == "":
+            err(
+                f"{rank}位 - {name}: 「戦死数」の読み取りに失敗しました。 -> {rank}-dead.png",
+                [(f"{rank}-dead.png", dead_img)],
+            )
 
     # 資源援助
-    rss_img = correct_image(img_b, RSS_CROP_RANGE, brightness=1.3, contrast=1.8)
-    rss = ocr_image(rss_img)
-    rss = rss.replace(",", "")
-    if rss == "":
-        err(
-            f"{rank}位 - {name}: 「資源援助数」の読み取りに失敗しました。 -> {rank}-rss.png",
-            [(f"{rank}-rss.png", rss_img)],
-        )
+    rss = ""
+    if "rss" in args.targets:
+        rss_img = correct_image(img_b, RSS_CROP_RANGE, brightness=1.3, contrast=1.8)
+        rss = ocr_image(rss_img)
+        rss = rss.replace(",", "")
+        if rss == "":
+            err(
+                f"{rank}位 - {name}: 「資源援助数」の読み取りに失敗しました。 -> {rank}-rss.png",
+                [(f"{rank}-rss.png", rss_img)],
+            )
 
     print(
         f"{rank} {id} {name} {alliance} {power} {hpower} {kills[0]} {kills[1]} {kills[2]} {kills[3]} {kills[4]} {ranged} {dead} {rss}"
