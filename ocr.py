@@ -183,7 +183,7 @@ def ocr_images(rank: str, name: str):
     alliance = ""
     if "alliance" in args.targets:
         alliance_img = correct_image(
-            img_a, ALLIANCE_CROP_RANGE, scale=5, contrast=1.3, brightness=2
+            img_a, ALLIANCE_CROP_RANGE, contrast=1.3, brightness=2
         )
         alliance = ocr_image(
             alliance_img,
