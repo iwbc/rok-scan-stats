@@ -7,6 +7,7 @@ import argparse
 import pyperclip
 import csv
 import portalocker
+import fasteners
 from android_auto_play_opencv import AapoManager
 
 # Nox adbパス
@@ -137,13 +138,10 @@ def auto_capture(start: int, end: int):
         aapo.imgSave(img_dir_path + str(current_rank) + "b.png")
 
         # 総督名保存
-        with portalocker.Lock(
-            img_dir_path + "names.tsv",
-            "a+",
-            encoding="utf_8",
-            newline="",
-            timeout=60,
-        ) as fh:
+        # クリップボードを使うため、プロセス間排他処理する
+        lock = fasteners.InterProcessLock("./.tmp/save-governor-name.lock")
+        lock.acquire()
+        with open(img_dir_path + "names.tsv", "a+", encoding="utf_8", newline="") as fh:
             fh.seek(0)
             aapo.touchImg(template_dir_path + "copy.png")
             aapo.sleep(0.1)
@@ -154,6 +152,7 @@ def auto_capture(start: int, end: int):
             csv.writer(fh, delimiter="\t").writerows(
                 sorted(names, key=lambda x: int(x[0]))
             )
+        lock.release()
 
         # ランキングまで戻る
         returnToRankingScreen()
