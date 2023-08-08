@@ -24,6 +24,7 @@ Pythonは[Microsoft Store](https://www.microsoft.com/ja-jp/p/python-310/9pjpw5ld
 pip install android-auto-play-opencv
 pip install pyperclip
 pip install portalocker
+pip install fasteners
 ```
 
 rok-scan-statsディレクトリのパスには日本語を含まないようにしてください（`C:¥Program Files¥ライキン¥rok-scan-stats¥`のようにパスの途中に日本語を含むと画像解析に失敗します）  
