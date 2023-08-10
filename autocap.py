@@ -18,9 +18,9 @@ RANKING_TAP_POS_X = 760
 # ランキングタップ位置（Y軸、[1位,2位,3位,4位-998位,999位,1000位]）
 RANKING_TAP_POS_Y = (280, 384, 485, 613, 713, 813)
 # 撃破詳細タップ位置
-KILL_DETAIL_TAP_POS = (1117, 352)
+KILL_DETAIL_TAP_POS = (1119, 314)
 # 詳細情報タップ位置
-PLAYER_DETAIL_TAP_POS = (386, 667)
+PLAYER_DETAIL_TAP_POS = (353, 737)
 
 aapo = None
 template_dir_path = None

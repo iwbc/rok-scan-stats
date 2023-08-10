@@ -13,10 +13,10 @@ import pyocr.builders
 from PIL import Image, ImageOps, ImageEnhance
 
 # 同盟タグの切り抜き範囲
-ALLIANCE_CROP_RANGE = (644, 365, 763, 396)
+ALLIANCE_CROP_RANGE = (600, 331, 720, 363)
 
 # IDの切り抜き範囲
-ID_CROP_RANGE = (735, 236, 880, 268)
+ID_CROP_RANGE = (692, 197, 837, 225)
 
 # 撃破数の切り抜き範囲
 # (
@@ -25,11 +25,11 @@ ID_CROP_RANGE = (735, 236, 880, 268)
 #   ...
 # )
 KILL_CROP_RANGES = (
-    (863, 468, 1068, 494),
-    (863, 512, 1068, 538),
-    (863, 556, 1068, 582),
-    (863, 600, 1068, 626),
-    (863, 645, 1068, 671),
+    (864, 430, 1070, 457),
+    (864, 474, 1070, 501),
+    (864, 518, 1070, 545),
+    (864, 562, 1070, 589),
+    (864, 606, 1070, 633),
 )
 
 # 撃破ポイントの切り抜き範囲
@@ -39,11 +39,11 @@ KILL_CROP_RANGES = (
 #   ...
 # )
 KILL_POINT_CROP_RANGES = (
-    (1211, 468, 1415, 494),
-    (1211, 512, 1415, 538),
-    (1211, 556, 1415, 582),
-    (1211, 600, 1415, 626),
-    (1211, 645, 1415, 671),
+    (1211, 430, 1417, 457),
+    (1211, 474, 1417, 501),
+    (1211, 518, 1417, 545),
+    (1211, 562, 1417, 589),
+    (1211, 606, 1417, 633),
 )
 
 # 撃破ポイント係数
@@ -51,7 +51,7 @@ KILL_POINT_CROP_RANGES = (
 KILL_POINT_COEFFICIENTS = (0.2, 2, 4, 10, 20)
 
 # 遠隔ポイントの切り抜き範囲
-RANGED_POINT_CROP_RANGE = (1118, 744, 1415, 775)
+RANGED_POINT_CROP_RANGE = (1117, 707, 1417, 738)
 
 # 戦力の切り抜き範囲
 POWER_CROP_RANGE = (809, 141, 1009, 173)
@@ -265,7 +265,7 @@ def ocr_images(rank: str, name: str):
             threshold=50,
             invert=False,
             brightness=1.2,
-            contrast=1.2,
+            contrast=2,
         )
         ranged = ocr_image(ranged_img)
         ranged = ranged.replace(",", "")
