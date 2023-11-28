@@ -32,7 +32,7 @@ rok-scan-statsディレクトリのパスには日本語を含まないように
 
 #### NoxPlayerとライキンの設定
 
-NoxPlayerの設定は、パフォーマンス「高い（4コアCPU、4096MBメモリ）」、解像度「1600x900」にし、ライキンは、画質「中」、フレームレート「至高」にします。  
+NoxPlayerの設定は、パフォーマンス「高い（4コアCPU、4096MBメモリ）」、解像度「1600x900」にし、ライキンは、言語「日本語」、画質「中」、フレームレート「至高」にします。  
 なお、同盟から脱退し無所属の状態で実行することを推奨します（同盟通知が読み取り対象に重なってしまうことがあります）
 
 ### 使い方
@@ -90,7 +90,7 @@ autocap.pyで収集したスクリーンショットから、プレイヤー名�
 
 #### 環境
 
-Windowsは[GitHub](https://github.com/UB-Mannheim/tesseract/wiki)から64bit版のTesseract v5.0.xをダウンロードしてインストールしてください。  
+Windowsは[GitHub](https://github.com/UB-Mannheim/tesseract/wiki)から64bit版のTesseract v5.xをダウンロードしてインストールしてください。  
 ※ インストール後、tesseract.exeまでのPathを通さないと動作しません。
 
 macOSはHomebrewからインストールできます。
