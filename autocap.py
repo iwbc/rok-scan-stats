@@ -27,12 +27,13 @@ template_dir_path = None
 dir_path = None
 img_dir_path = None
 log_dir_path = None
+delay: float = 1
 
 current_rank: int = 0
 
 
 def main():
-    global aapo, template_dir_path, dir_path, img_dir_path, log_dir_path
+    global aapo, template_dir_path, dir_path, img_dir_path, log_dir_path, delay
 
     aapo = AapoManager(ADB_PATH)
     devices = aapo.adbl.devices
@@ -43,6 +44,7 @@ def main():
     )
     parser.add_argument("-s", "--start-rank", type=int, default=1)
     parser.add_argument("-e", "--end-rank", type=int, default=1000)
+    parser.add_argument("--delay", type=float, default=1)
     args = parser.parse_args()
 
     print(f"\n===== {args.start_rank}位から{args.end_rank}位までキャプチャします。 =====\n")
@@ -64,6 +66,7 @@ def main():
     dir_path = "data/" + args.dir + "/"
     img_dir_path = dir_path + "screenshots/"
     log_dir_path = dir_path + "logs/autocap/"
+    delay = args.delay
 
     os.makedirs(log_dir_path, exist_ok=True)
 
@@ -92,7 +95,7 @@ def auto_capture(start: int, end: int):
             aapo.touchPos(RANKING_TAP_POS_X, RANKING_TAP_POS_Y[5])
         else:
             aapo.touchPos(RANKING_TAP_POS_X, RANKING_TAP_POS_Y[3])
-        aapo.sleep(0.5)
+        aapo.sleep(0.5 * delay)
 
         try:
             checkImg(template_dir_path + "player.png")
@@ -113,7 +116,7 @@ def auto_capture(start: int, end: int):
 
         # 撃破詳細表示・キャプチャ
         aapo.touchPos(KILL_DETAIL_TAP_POS[0], KILL_DETAIL_TAP_POS[1])
-        aapo.sleep(0.5)
+        aapo.sleep(0.5 * delay)
 
         try:
             checkImg(template_dir_path + "kill.png")
@@ -126,7 +129,7 @@ def auto_capture(start: int, end: int):
 
         # 詳細情報表示・キャプチャ
         aapo.touchPos(PLAYER_DETAIL_TAP_POS[0], PLAYER_DETAIL_TAP_POS[1])
-        aapo.sleep(0.5)
+        aapo.sleep(0.5 * delay)
 
         try:
             checkImg(template_dir_path + "detail.png")
@@ -144,7 +147,7 @@ def auto_capture(start: int, end: int):
         with open(img_dir_path + "names.tsv", "a+", encoding="utf_8", newline="") as fh:
             fh.seek(0)
             aapo.touchImg(template_dir_path + "copy.png")
-            aapo.sleep(0.1)
+            aapo.sleep(0.1 * delay)
             names = list(csv.reader(fh, delimiter="\t"))
             names.append([str(current_rank), pyperclip.paste()])
             fh.truncate(0)
@@ -168,7 +171,7 @@ def checkImg(img_path: str):
             raise TimeoutError
         else:
             timer += 1
-            aapo.sleep(1)
+            aapo.sleep(1 * delay)
 
 
 def returnToRankingScreen():
@@ -183,7 +186,7 @@ def returnToRankingScreen():
         else:
             aapo.touchImg(template_dir_path + "close.png")
             timer += 1
-            aapo.sleep(1)
+            aapo.sleep(1 * delay)
 
 
 def err(message: str):
