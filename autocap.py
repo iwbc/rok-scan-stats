@@ -21,6 +21,10 @@ RANKING_TAP_POS_Y = (280, 384, 485, 613, 713, 813)
 KILL_DETAIL_TAP_POS = (1119, 314)
 # 詳細情報タップ位置
 PLAYER_DETAIL_TAP_POS = (353, 737)
+# 詳細情報クローズタップ位置
+DETAIL_CLOSE_TAP_POS = (1395, 56)
+# 総督情報クローズタップ位置
+PLAYER_CLOSE_TAP_POS = (1365, 103)
 
 aapo = None
 template_dir_path = None
@@ -98,7 +102,7 @@ def auto_capture(start: int, end: int):
         aapo.sleep(0.5 * delay)
 
         try:
-            checkImg(template_dir_path + "player.png")
+            checkImg(template_dir_path + "player1.png")
         except TimeoutError:
             err(f"{current_rank}位: 総督情報の表示に失敗しました。キャプチャをスキップします。 -> {current_rank}.png")
             if aapo.chkImg(template_dir_path + "ranking.png"):
@@ -132,7 +136,7 @@ def auto_capture(start: int, end: int):
         aapo.sleep(0.5 * delay)
 
         try:
-            checkImg(template_dir_path + "detail.png")
+            checkImg(template_dir_path + "player2.png")
         except TimeoutError:
             err(f"{current_rank}位: 詳細情報の表示に失敗しました。キャプチャをスキップします。 -> {current_rank}.png")
             returnToRankingScreen()
@@ -158,7 +162,7 @@ def auto_capture(start: int, end: int):
         lock.release()
 
         # ランキングまで戻る
-        returnToRankingScreen()
+        returnToRankingScreen("DETAIL")
 
 
 def checkImg(img_path: str):
@@ -174,19 +178,33 @@ def checkImg(img_path: str):
             aapo.sleep(1 * delay)
 
 
-def returnToRankingScreen():
-    timer = 0
-    while True:
+def returnToRankingScreen(current_screen: str = None):
+    # 現在の画面判定
+    if current_screen is None:
         aapo.screencap()
         if aapo.chkImg(template_dir_path + "ranking.png"):
-            break
-        elif timer >= 4:
+            return
+        elif aapo.chkImg(template_dir_path + "player1.png"):
+            returnToRankingScreen("PLAYER")
+            return
+        elif aapo.chkImg(template_dir_path + "player2.png"):
+            returnToRankingScreen("DETAIL")
+            return
+        else:
             err(f"ランキングの表示に失敗しました。処理を中止します。 -> {current_rank}.png")
             sys.exit(1)
-        else:
-            aapo.touchImg(template_dir_path + "close.png")
-            timer += 1
+    # 前の画面へ戻る
+    else:
+        if current_screen == "DETAIL":
+            aapo.touchPos(DETAIL_CLOSE_TAP_POS[0], DETAIL_CLOSE_TAP_POS[1])
             aapo.sleep(1 * delay)
+            returnToRankingScreen("PLAYER")
+            return
+        elif current_screen == "PLAYER":
+            aapo.touchPos(PLAYER_CLOSE_TAP_POS[0], PLAYER_CLOSE_TAP_POS[1])
+            aapo.sleep(1 * delay)
+            returnToRankingScreen()
+            return
 
 
 def err(message: str):
