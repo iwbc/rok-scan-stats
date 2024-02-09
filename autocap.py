@@ -99,7 +99,7 @@ def auto_capture(start: int, end: int):
             aapo.touchPos(RANKING_TAP_POS_X, RANKING_TAP_POS_Y[5])
         else:
             aapo.touchPos(RANKING_TAP_POS_X, RANKING_TAP_POS_Y[3])
-        aapo.sleep(0.5 * delay)
+        aapo.sleep(0.75 * delay)
 
         try:
             checkImg(template_dir_path + "player1.png")
@@ -120,7 +120,7 @@ def auto_capture(start: int, end: int):
 
         # 撃破詳細表示・キャプチャ
         aapo.touchPos(KILL_DETAIL_TAP_POS[0], KILL_DETAIL_TAP_POS[1])
-        aapo.sleep(0.5 * delay)
+        aapo.sleep(0.75 * delay)
 
         try:
             checkImg(template_dir_path + "kill.png")
@@ -133,7 +133,7 @@ def auto_capture(start: int, end: int):
 
         # 詳細情報表示・キャプチャ
         aapo.touchPos(PLAYER_DETAIL_TAP_POS[0], PLAYER_DETAIL_TAP_POS[1])
-        aapo.sleep(0.5 * delay)
+        aapo.sleep(0.75 * delay)
 
         try:
             checkImg(template_dir_path + "player2.png")
@@ -197,12 +197,12 @@ def returnToRankingScreen(current_screen: str = None):
     else:
         if current_screen == "DETAIL":
             aapo.touchPos(DETAIL_CLOSE_TAP_POS[0], DETAIL_CLOSE_TAP_POS[1])
-            aapo.sleep(1 * delay)
+            aapo.sleep(1.25 * delay)
             returnToRankingScreen("PLAYER")
             return
         elif current_screen == "PLAYER":
             aapo.touchPos(PLAYER_CLOSE_TAP_POS[0], PLAYER_CLOSE_TAP_POS[1])
-            aapo.sleep(1 * delay)
+            aapo.sleep(1.25 * delay)
             returnToRankingScreen()
             return
 
