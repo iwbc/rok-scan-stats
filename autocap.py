@@ -171,7 +171,7 @@ def checkImg(img_path: str):
         aapo.screencap()
         if aapo.chkImg(img_path):
             break
-        elif timer >= 4:
+        elif timer >= 2:
             raise TimeoutError
         else:
             timer += 1
