@@ -3,9 +3,9 @@
 
 param([String]$dir = (Get-Date -Format "yyyy-MM-dd"))
 
-$p1 = Start-Process -FilePath powershell.exe -PassThru -ArgumentList "-noexit -command python autocap.py -d $dir -s 1   -e 333"
-$p2 = Start-Process -FilePath powershell.exe -PassThru -ArgumentList "-noexit -command python autocap.py -d $dir -s 334 -e 666"
-$p3 = Start-Process -FilePath powershell.exe -PassThru -ArgumentList "-noexit -command python autocap.py -d $dir -s 667 -e 1000"
+$p1 = Start-Process -FilePath powershell.exe -PassThru -ArgumentList "-noexit -command python autocap.py 127.0.0.1:5745 -d $dir -s 1   -e 333"
+$p2 = Start-Process -FilePath powershell.exe -PassThru -ArgumentList "-noexit -command python autocap.py 127.0.0.1:5755 -d $dir -s 334 -e 666"
+$p3 = Start-Process -FilePath powershell.exe -PassThru -ArgumentList "-noexit -command python autocap.py 127.0.0.1:5765 -d $dir -s 667 -e 1000"
 
 $w = 640
 $h = 300

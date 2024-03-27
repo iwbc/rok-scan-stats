@@ -2,6 +2,7 @@
 
 import os
 import sys
+from pathlib import Path
 import datetime
 import argparse
 import pyperclip
@@ -9,9 +10,6 @@ import csv
 import portalocker
 import fasteners
 from android_auto_play_opencv import AapoManager
-
-# Nox adbパス
-ADB_PATH = "C:/Program Files/Nox/bin/"
 
 # ランキングタップ位置（X軸）
 RANKING_TAP_POS_X = 760
@@ -39,10 +37,8 @@ current_rank: int = 0
 def main():
     global aapo, template_dir_path, dir_path, img_dir_path, log_dir_path, delay
 
-    aapo = AapoManager(ADB_PATH)
-    devices = aapo.adbl.devices
-
     parser = argparse.ArgumentParser()
+    parser.add_argument("adb", type=str)
     parser.add_argument(
         "-d", "--dir", type=str, default=datetime.datetime.now().strftime("%Y-%m-%d")
     )
@@ -51,7 +47,17 @@ def main():
     parser.add_argument("--delay", type=float, default=1)
     args = parser.parse_args()
 
-    print(f"\n===== {args.start_rank}位から{args.end_rank}位までキャプチャします。 =====\n")
+    libs_dir = "./libs/"
+    adb_path = Path(libs_dir).absolute() / "adb.exe"
+
+    os.system(f"{adb_path} connect {args.adb}")
+
+    aapo = AapoManager(libs_dir)
+    devices = aapo.adbl.devices
+
+    print(
+        f"\n===== {args.start_rank}位から{args.end_rank}位までキャプチャします。 =====\n"
+    )
 
     for i, device in enumerate(devices):
         if device == "":
@@ -104,7 +110,9 @@ def auto_capture(start: int, end: int):
         try:
             checkImg(template_dir_path + "player1.png")
         except TimeoutError:
-            err(f"{current_rank}位: 総督情報の表示に失敗しました。キャプチャをスキップします。 -> {current_rank}.png")
+            err(
+                f"{current_rank}位: 総督情報の表示に失敗しました。キャプチャをスキップします。 -> {current_rank}.png"
+            )
             if aapo.chkImg(template_dir_path + "ranking.png"):
                 aapo.swipeTouchPos(
                     RANKING_TAP_POS_X,
@@ -115,7 +123,9 @@ def auto_capture(start: int, end: int):
                 )
                 continue
             else:
-                err(f"ランキングの表示に失敗しました。処理を中止します。 -> {current_rank}.png")
+                err(
+                    f"ランキングの表示に失敗しました。処理を中止します。 -> {current_rank}.png"
+                )
                 sys.exit(1)
 
         # 撃破詳細表示・キャプチャ
@@ -125,7 +135,9 @@ def auto_capture(start: int, end: int):
         try:
             checkImg(template_dir_path + "kill.png")
         except TimeoutError:
-            err(f"{current_rank}位: 撃破詳細の表示に失敗しました。キャプチャをスキップします。 -> {current_rank}.png")
+            err(
+                f"{current_rank}位: 撃破詳細の表示に失敗しました。キャプチャをスキップします。 -> {current_rank}.png"
+            )
             returnToRankingScreen()
             continue
 
@@ -138,7 +150,9 @@ def auto_capture(start: int, end: int):
         try:
             checkImg(template_dir_path + "player2.png")
         except TimeoutError:
-            err(f"{current_rank}位: 詳細情報の表示に失敗しました。キャプチャをスキップします。 -> {current_rank}.png")
+            err(
+                f"{current_rank}位: 詳細情報の表示に失敗しました。キャプチャをスキップします。 -> {current_rank}.png"
+            )
             returnToRankingScreen()
             continue
 
@@ -191,7 +205,9 @@ def returnToRankingScreen(current_screen: str = None):
             returnToRankingScreen("DETAIL")
             return
         else:
-            err(f"ランキングの表示に失敗しました。処理を中止します。 -> {current_rank}.png")
+            err(
+                f"ランキングの表示に失敗しました。処理を中止します。 -> {current_rank}.png"
+            )
             sys.exit(1)
     # 前の画面へ戻る
     else:
