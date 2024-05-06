@@ -25,4 +25,5 @@ Add-Type @"
 foreach ($p in $p1,$p2,$p3) {
   [Win32Api]::MoveWindow($p.MainWindowHandle, $x, $y, $w, $h, $true) | Out-Null
   $x = $x + $w
+  Start-Sleep 1
 }
